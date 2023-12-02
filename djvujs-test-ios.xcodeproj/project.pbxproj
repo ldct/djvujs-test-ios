@@ -11,6 +11,9 @@
 		93BEE72C2B1BAD1000CF4F03 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BEE72B2B1BAD1000CF4F03 /* ContentView.swift */; };
 		93BEE72E2B1BAD1100CF4F03 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93BEE72D2B1BAD1100CF4F03 /* Assets.xcassets */; };
 		93BEE7312B1BAD1100CF4F03 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93BEE7302B1BAD1100CF4F03 /* Preview Assets.xcassets */; };
+		93BEE7382B1BAE3A00CF4F03 /* reader.html in Resources */ = {isa = PBXBuildFile; fileRef = 93BEE7372B1BAE3A00CF4F03 /* reader.html */; };
+		93BEE73D2B1BBB3E00CF4F03 /* DjVu3Spec.djvu in Resources */ = {isa = PBXBuildFile; fileRef = 93BEE73C2B1BBB3E00CF4F03 /* DjVu3Spec.djvu */; };
+		93BEE73F2B1BBE1400CF4F03 /* core.js in Resources */ = {isa = PBXBuildFile; fileRef = 93BEE73E2B1BBE1400CF4F03 /* core.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +22,9 @@
 		93BEE72B2B1BAD1000CF4F03 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		93BEE72D2B1BAD1100CF4F03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		93BEE7302B1BAD1100CF4F03 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		93BEE7372B1BAE3A00CF4F03 /* reader.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = reader.html; path = "djvujs-test-ios/reader.html"; sourceTree = SOURCE_ROOT; };
+		93BEE73C2B1BBB3E00CF4F03 /* DjVu3Spec.djvu */ = {isa = PBXFileReference; lastKnownFileType = file; path = DjVu3Spec.djvu; sourceTree = "<group>"; };
+		93BEE73E2B1BBE1400CF4F03 /* core.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = core.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +60,9 @@
 				93BEE7292B1BAD1000CF4F03 /* djvujs_test_iosApp.swift */,
 				93BEE72B2B1BAD1000CF4F03 /* ContentView.swift */,
 				93BEE72D2B1BAD1100CF4F03 /* Assets.xcassets */,
+				93BEE7372B1BAE3A00CF4F03 /* reader.html */,
+				93BEE73C2B1BBB3E00CF4F03 /* DjVu3Spec.djvu */,
+				93BEE73E2B1BBE1400CF4F03 /* core.js */,
 				93BEE72F2B1BAD1100CF4F03 /* Preview Content */,
 			);
 			path = "djvujs-test-ios";
@@ -125,8 +134,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93BEE73D2B1BBB3E00CF4F03 /* DjVu3Spec.djvu in Resources */,
 				93BEE7312B1BAD1100CF4F03 /* Preview Assets.xcassets in Resources */,
+				93BEE7382B1BAE3A00CF4F03 /* reader.html in Resources */,
 				93BEE72E2B1BAD1100CF4F03 /* Assets.xcassets in Resources */,
+				93BEE73F2B1BBE1400CF4F03 /* core.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
