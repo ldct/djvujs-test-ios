@@ -7,6 +7,49 @@
 
 import SwiftUI
 import JavaScriptCore
+import CoreImage
+import CoreImage.CIFilterBuiltins
+
+struct PixelData {
+    var a: UInt8
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+}
+
+func imageFromARGB32Bitmap(pixels: [PixelData], width: Int, height: Int) -> UIImage? {
+    guard width > 0 && height > 0 else { return nil }
+    guard pixels.count == width * height else { return nil }
+
+    let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+    let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+    let bitsPerComponent = 8
+    let bitsPerPixel = 32
+
+    var data = pixels // Copy to mutable []
+    guard let providerRef = CGDataProvider(data: NSData(bytes: &data,
+                            length: data.count * MemoryLayout<PixelData>.size)
+        )
+        else { return nil }
+
+    guard let cgim = CGImage(
+        width: width,
+        height: height,
+        bitsPerComponent: bitsPerComponent,
+        bitsPerPixel: bitsPerPixel,
+        bytesPerRow: width * MemoryLayout<PixelData>.size,
+        space: rgbColorSpace,
+        bitmapInfo: bitmapInfo,
+        provider: providerRef,
+        decode: nil,
+        shouldInterpolate: true,
+        intent: .defaultIntent
+        )
+        else { return nil }
+
+    return UIImage(cgImage: cgim)
+}
+
 
 struct ImageData {
     let data: Data
@@ -26,6 +69,21 @@ struct ImageData {
         self.size = CGSize(width: Int(width), height: Int(height))
         
         assert(byteLength == width*height*4)
+    }
+    
+    var uiImage: UIImage {
+        let arr = Array(data)
+        var pixels = [PixelData]()
+
+        assert(arr.count % 4 == 0)
+        
+        // loop through arr 4 at a time
+        for i in stride(from: 0, to: arr.count, by: 4) {
+            let pixel = PixelData(a: arr[i+3], r: arr[i], g: arr[i+1], b: arr[i+2])
+            pixels.append(pixel)
+        }
+        
+        return imageFromARGB32Bitmap(pixels: pixels, width: Int(self.size.width), height: Int(self.size.height))!
     }
 }
 struct ContentView: View {
@@ -93,33 +151,23 @@ struct ContentView: View {
         
         let id = ImageData(context: context, imageDataJSValue: imageData)
 
-//        let a = Array(d)
-//        var total = 0
-//        a.forEach {
-//            total += Int($0)
-//            total = total % 137
-//        }
-//        print(total)
-        //        let arr = (result3.toArray()!) as! [Int]
-////
-//        let width = arr[0]
-//        let height = arr[1]
-//        
-//        let rest = arr.dropFirst(2)
-//        
-//        print(width*height*4, rest.count)
-
-//        let url2 = Bundle.main.url(forResource: "DjVu3Spec", withExtension: "djvu")!
-//        let data = try! Data.init(contentsOf: url2)
-//        let str = data.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0))
+        uiImage = id.uiImage
     }
+    
+    var uiImage: UIImage?
+    @State private var image: Image?
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")        }
-        .padding()
+            image?
+                .resizable()
+                .scaledToFit()
+        }
+        .onAppear(perform: loadImage)
+    }
+
+    func loadImage() {
+        image = Image(uiImage: uiImage!)
     }
 }
 
