@@ -62,7 +62,6 @@ struct ImageData {
         let typedArray = imageDataJSValue.forProperty("data")!
         let typedArrayRef = typedArray.jsValueRef
         let byteLength = JSObjectGetTypedArrayByteLength(context.jsGlobalContextRef, typedArrayRef, nil)
-        print(byteLength)
         let buffer = typedArray.forProperty("buffer")!
         let ptr = JSObjectGetArrayBufferBytesPtr(context.jsGlobalContextRef, buffer.jsValueRef, nil)!
         self.data = Data(bytes: ptr, count: byteLength)
@@ -87,7 +86,7 @@ struct ImageData {
     }
 }
 struct ContentView: View {
-    lazy var context: JSContext = {
+    let context: JSContext = {
         let context = JSContext()!
         
         context.exceptionHandler = { context, exception in
@@ -109,7 +108,16 @@ struct ContentView: View {
         return data
     }()
     
-    lazy var specAB: JSValue? = {
+    let specAB: JSValue?
+
+    func getImageDataForPage(_ pageNum: Int) -> ImageData {
+        let sizeFunc = context.objectForKeyedSubscript("getID")!
+        let imageData: JSValue = sizeFunc.call(withArguments: [specAB, pageNum])!
+        
+        return ImageData(context: context, imageDataJSValue: imageData)
+    }
+    
+    init() {
         let contents = specContents
         let ctx = context
         
@@ -136,38 +144,47 @@ struct ContentView: View {
 
         if exception != nil {
             ctx.exception = JSValue(jsValueRef: exception, in: ctx)
-            return nil
+            specAB = nil
+        } else {
+            specAB = JSValue(jsValueRef: arrayBufferRef, in: ctx)
         }
-
-        return JSValue(jsValueRef: arrayBufferRef, in: ctx)
-    }()
-
-    init() {
-        print("xuanji06 hi")
-        
-        
-        let sizeFunc = context.objectForKeyedSubscript("firstPage")!
-        let imageData: JSValue = sizeFunc.call(withArguments: [specAB!])!
-        
-        let id = ImageData(context: context, imageDataJSValue: imageData)
-
+        let id = getImageDataForPage(3)
         uiImage = id.uiImage
     }
     
     var uiImage: UIImage?
     @State private var image: Image?
+    
+    @State private var desiredPageNum: Int = 1
 
     var body: some View {
         VStack {
             image?
                 .resizable()
                 .scaledToFit()
+            HStack {
+                Button(action: {
+                    desiredPageNum -= 1
+                    loadImage()
+                }) {
+                    Image(systemName: "chevron.left")
+                }
+                Text("Page \(desiredPageNum)")
+                Button(action: {
+                    desiredPageNum += 1
+                    loadImage()
+                }) {
+                    Image(systemName: "chevron.right")
+                }
+            }
         }
         .onAppear(perform: loadImage)
     }
 
     func loadImage() {
-        image = Image(uiImage: uiImage!)
+        print("loadImage called")
+        let id = getImageDataForPage(desiredPageNum)
+        image = Image(uiImage: id.uiImage)
     }
 }
 

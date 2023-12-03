@@ -15561,9 +15561,8 @@ function numPages(arrayBuffer) {
     return doc.getPagesQuantity();
 }
 
-function firstPage(arrayBuffer) {
+function getID(arrayBuffer, num) {
     const doc = new DjVu.Document(arrayBuffer);
-    const page = doc.getPage_sync(1);
+    const page = doc.getPage_sync(num);
     return page.getImageData();
-    return [imageData.b, imageData.c].concat(Array.prototype.slice.call(imageData.a));
 }
