@@ -9,6 +9,10 @@ var DjVu = (function () {
         IS_DEBUG: false,
         setDebugMode: (flag) => DjVu.IS_DEBUG = flag
     };
+
+    const performance = {
+        now: function() { return 0; }
+    }
     function pLimit(limit = 4) {
         const queue = [];
         let running = 0;
@@ -116,6 +120,14 @@ var DjVu = (function () {
 
     const pageSize = 64 * 1024;
     const growthLimit = 20 * 1024 * 1024 / pageSize;
+
+    class ImageData {
+        constructor(a, b, c) {
+            this.data = a;
+            this.width = b; 
+            this.height = c;
+        }
+    }
     class ByteStreamWriter {
         constructor(length = 0) {
             this.memory = new WebAssembly.Memory({ initial: Math.ceil(length / pageSize), maximum: 65536 });
@@ -14425,6 +14437,19 @@ var DjVu = (function () {
         _getUrlByPageNumber(number) {
             return this.baseUrl + this.dirm.getPageNameByItsNumber(number);
         }
+        getPage_sync(number) {
+            var page = this.pages[number - 1];
+            if (this.lastRequestedPage && this.lastRequestedPage !== page) {
+                this.lastRequestedPage.reset();
+            }
+            this.lastRequestedPage = page;
+            if (!page) {
+                console.log("error");
+            } else if (!this.isOnePageDependenciesLoaded && this.id === "FORMDJVU") {
+                console.log("error");
+            }
+            return this.lastRequestedPage;
+        }
         async getPage(number) {
             var page = this.pages[number - 1];
             if (this.lastRequestedPage && this.lastRequestedPage !== page) {
@@ -15530,12 +15555,15 @@ var DjVu = (function () {
     return Object.assign(DjVuScript(), {DjVuScript});
 
 })();
-function arrayBufferToSize(arrayBuffer) {
-    return arrayBuffer.byteLength;
-}
 
-function arrayBufferToAnInt(arrayBuffer) {
+function numPages(arrayBuffer) {
     const doc = new DjVu.Document(arrayBuffer);
     return doc.getPagesQuantity();
-    return arrayBuffer.byteLength;
+}
+
+function firstPage(arrayBuffer) {
+    const doc = new DjVu.Document(arrayBuffer);
+    const page = doc.getPage_sync(1);
+    return page.getImageData();
+    return [imageData.b, imageData.c].concat(Array.prototype.slice.call(imageData.a));
 }

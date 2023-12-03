@@ -8,13 +8,32 @@
 import SwiftUI
 import JavaScriptCore
 
-
+struct ImageData {
+    let data: Data
+    let size: CGSize
+    
+    init(context: JSContext, imageDataJSValue: JSValue) {
+        let width = imageDataJSValue.forProperty("width").toInt32()
+        let height = imageDataJSValue.forProperty("height").toInt32()
+        
+        let typedArray = imageDataJSValue.forProperty("data")!
+        let typedArrayRef = typedArray.jsValueRef
+        let byteLength = JSObjectGetTypedArrayByteLength(context.jsGlobalContextRef, typedArrayRef, nil)
+        print(byteLength)
+        let buffer = typedArray.forProperty("buffer")!
+        let ptr = JSObjectGetArrayBufferBytesPtr(context.jsGlobalContextRef, buffer.jsValueRef, nil)!
+        self.data = Data(bytes: ptr, count: byteLength)
+        self.size = CGSize(width: Int(width), height: Int(height))
+        
+        assert(byteLength == width*height*4)
+    }
+}
 struct ContentView: View {
-    let context: JSContext = {
+    lazy var context: JSContext = {
         let context = JSContext()!
         
         context.exceptionHandler = { context, exception in
-            print(exception!.toString())
+            print(exception!.toString()!)
         }
 
         
@@ -69,10 +88,26 @@ struct ContentView: View {
         print("xuanji06 hi")
         
         
-        let sizeFunc = context.objectForKeyedSubscript("arrayBufferToAnInt")!
-        let result3 = sizeFunc.call(withArguments: [specAB])!
-        print(result3.toInt32())
+        let sizeFunc = context.objectForKeyedSubscript("firstPage")!
+        let imageData: JSValue = sizeFunc.call(withArguments: [specAB!])!
+        
+        let id = ImageData(context: context, imageDataJSValue: imageData)
 
+//        let a = Array(d)
+//        var total = 0
+//        a.forEach {
+//            total += Int($0)
+//            total = total % 137
+//        }
+//        print(total)
+        //        let arr = (result3.toArray()!) as! [Int]
+////
+//        let width = arr[0]
+//        let height = arr[1]
+//        
+//        let rest = arr.dropFirst(2)
+//        
+//        print(width*height*4, rest.count)
 
 //        let url2 = Bundle.main.url(forResource: "DjVu3Spec", withExtension: "djvu")!
 //        let data = try! Data.init(contentsOf: url2)
