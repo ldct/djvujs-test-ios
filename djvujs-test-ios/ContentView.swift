@@ -80,29 +80,13 @@ struct ImageData {
     }
     
     var uiImage: UIImage {
-        let startTime = CFAbsoluteTimeGetCurrent()
-        defer {
-            let timeElapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
-            print("ImageData uiImage took \(timeElapsed) milliseconds")
-        }
-
         let arr = Array(data)
-        var pixels = [UInt8]()
-
-        assert(arr.count % 4 == 0)
-        pixels = [UInt8](repeating: 0, count: arr.count)
-
-        arr.withUnsafeBytes { source in
-            pixels.withUnsafeMutableBytes { dest in
-                dest.copyMemory(from: source)
-            }
-        }
         
         return imageFromARGB32Bitmap(
-            pixels: pixels,
+            pixels: Array(data),
             width: Int(self.size.width),
             height: Int(self.size.height),
-            dataSizeBytes: pixels.count
+            dataSizeBytes: arr.count
         )!
     }
 }
