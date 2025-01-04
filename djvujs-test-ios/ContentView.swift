@@ -17,18 +17,22 @@ struct PixelData {
     var b: UInt8
 }
 
-func imageFromARGB32Bitmap(pixels: [PixelData], width: Int, height: Int) -> UIImage? {
+func imageFromARGB32Bitmap(
+    pixels: [UInt8],
+    width: Int,
+    height: Int,
+    dataSizeBytes: Int
+) -> UIImage? {
     guard width > 0 && height > 0 else { return nil }
-    guard pixels.count == width * height else { return nil }
 
     let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-    let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+    let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
     let bitsPerComponent = 8
     let bitsPerPixel = 32
 
     var data = pixels // Copy to mutable []
     guard let providerRef = CGDataProvider(data: NSData(bytes: &data,
-                            length: data.count * MemoryLayout<PixelData>.size)
+                            length: dataSizeBytes)
         )
         else { return nil }
 
@@ -56,6 +60,11 @@ struct ImageData {
     let size: CGSize
     
     init(context: JSContext, imageDataJSValue: JSValue) {
+        let startTime = CFAbsoluteTimeGetCurrent()
+        defer {
+            let timeElapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            print("ImageData init took \(timeElapsed) milliseconds")
+        }
         let width = imageDataJSValue.forProperty("width").toInt32()
         let height = imageDataJSValue.forProperty("height").toInt32()
         
@@ -71,18 +80,30 @@ struct ImageData {
     }
     
     var uiImage: UIImage {
+        let startTime = CFAbsoluteTimeGetCurrent()
+        defer {
+            let timeElapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+            print("ImageData uiImage took \(timeElapsed) milliseconds")
+        }
+
         let arr = Array(data)
-        var pixels = [PixelData]()
+        var pixels = [UInt8]()
 
         assert(arr.count % 4 == 0)
-        
-        // loop through arr 4 at a time
-        for i in stride(from: 0, to: arr.count, by: 4) {
-            let pixel = PixelData(a: arr[i+3], r: arr[i], g: arr[i+1], b: arr[i+2])
-            pixels.append(pixel)
+        pixels = [UInt8](repeating: 0, count: arr.count)
+
+        arr.withUnsafeBytes { source in
+            pixels.withUnsafeMutableBytes { dest in
+                dest.copyMemory(from: source)
+            }
         }
         
-        return imageFromARGB32Bitmap(pixels: pixels, width: Int(self.size.width), height: Int(self.size.height))!
+        return imageFromARGB32Bitmap(
+            pixels: pixels,
+            width: Int(self.size.width),
+            height: Int(self.size.height),
+            dataSizeBytes: pixels.count
+        )!
     }
 }
 struct ContentView: View {
@@ -164,8 +185,10 @@ struct ContentView: View {
                 .scaledToFit()
             HStack {
                 Button(action: {
-                    desiredPageNum -= 1
-                    loadImage()
+                    if desiredPageNum > 1 {
+                        desiredPageNum -= 1
+                        loadImage()
+                    }
                 }) {
                     Image(systemName: "chevron.left")
                 }
@@ -182,7 +205,7 @@ struct ContentView: View {
     }
 
     func loadImage() {
-        print("loadImage called")
+        print("loadImage called \(desiredPageNum)")
         let id = getImageDataForPage(desiredPageNum)
         image = Image(uiImage: id.uiImage)
     }
